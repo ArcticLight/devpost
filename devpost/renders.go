@@ -19,6 +19,73 @@ var servicestyle = template.HTML(`<style>
     text-align: center;
   }
   
+  h4 {
+    display: inline;
+    margin: 0;
+  }
+  
+  span {
+    padding: 3px 4px 3px 4px;
+    border-radius: 5px;
+  }
+  
+  .status {
+    position: relative;
+    left: 26px;
+    display: inline-block;
+    border: 1px solid black;
+    border-left: none;
+    background-color: #CCC;
+    border-radius: 0 5px 5px 0;
+    height: 1.1em;
+    font-size: 1em;
+    padding: 3px 4px 3px 4px;
+    margin-left: 0;
+  }
+  
+  .error {
+    width: 50%;
+    min-width: 300px;
+    border: 1px solid darkred;
+    background-color: #FFAA99;
+    border-radius: 5px;
+    margin: 1em auto 0 auto;
+  }
+  
+  .error .code {
+    background-color: #EEE;
+    
+  }
+  
+  .status.ok {
+    background-color: #AAFF99;
+    color: darkgreen;
+    border-color: darkgreen;
+  }
+  
+  .status.bad {
+    background-color: #FFAA99;
+    color: darkred;
+    border-color: darkred;
+  }
+  
+  .status::before {
+    content: "Status:";
+    width: 50px;
+    position: absolute;
+    left: -58px;
+    top: -1px;
+    border: 1px solid black;
+    border-right: none;
+    background-color: #DDD;
+    color: black;
+    height: 1.1em;
+    font-size: 1em;
+    border-radius: 5px 0 0 5px;
+    padding: 3px 4px 3px 4px;
+    margin-right: 0;
+  }
+  
   div.center {
     margin: 0;
     width: 100%;
@@ -29,29 +96,36 @@ var servicestyle = template.HTML(`<style>
     display: inline-block;
     font-family: "Courier New", Courier, monospace;
     background-color: #CCC;
-    padding: 3px 4px 1px 4px;
-    border-radius: 5px;
+    padding-bottom: 1px;
   }
   
   .code {
     display: inline-block;
     font-family: "Courier New", Courier, monospace;
     background-color: #CCC;
-    padding: 3px 4px 1px 4px;
     border-radius: 5px;
+    padding-bottom: 1px;
   }
 </style>`)
 
-var welcomeTemplate, _ = template.New("WelcomePage").Parse(`<!DOCTYPE HTML>
+var welcomeTemplate, _ = template.New("WelcomePage").Parse(`
+<!DOCTYPE HTML>
 <html>
   <head>
     <title>DevPost - Start</title>
     {{.Style}}
   </head>
   <body>
-    <h1>DevPost is running!</h1>
+    <h1>DevPost started up!</h1>
     <div class="center">
       <p><em>(You will see this page only once)</em></p>
+      {{if .Status.Ok}}<span class="status ok">Everything is good!</span>{{else}}<span class="status bad">Something went wrong</span>
+        {{if .Status.Giterror}}<div class="error">
+          <h3>Git error:</h3>
+          <p>Unable to detect <span class="code">git</span></p>
+          <p>You will be unable to use Git functionality until you manually fix this <a href="{{.Prefix}}">in the settings</a>.</p>
+        </div>{{end}}
+      {{end}}
       <p>Refreshing this page will serve from <span class="path">{{.Wd}}</span></p>
       <p>To change DevPost settings, navigate to <span class="path">{{.Prefix}}</span>, or click <a href="{{.Prefix}}">this link</a></p>
     </div>
@@ -86,12 +160,13 @@ var fofTemplate, _ = template.New("fofTemplate").Parse(`<!DOCTYPE HTML>
 </html>`)
 
 //renderWelcomePage renders the HTML document first seen when DevPost starts up.
-func renderWelcomePage(w http.ResponseWriter, r *http.Request) {
-    welcomeTemplate.Execute(w,
+func renderWelcomePage(w http.ResponseWriter, r *http.Request, status dpstatus) {
+    welcomeTemplate.ExecuteTemplate(w, "WelcomePage",
     struct {
       Style template.HTML
+      Status dpstatus
       Wd, Prefix string
-    } { servicestyle, workingdir, "/"+controlprefix })
+    } { servicestyle, status, workingdir, "/"+controlprefix })
 }
 
 func renderStopPage(w http.ResponseWriter, r *http.Request) {

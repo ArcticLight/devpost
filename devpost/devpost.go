@@ -9,6 +9,11 @@ import (
     "strings"
 )
 
+type dpstatus struct {
+    Ok bool
+    Giterror bool
+}
+
 var workingdir string
 var closereq chan(bool)
 var firstContact = true
@@ -42,7 +47,7 @@ func stopServer() {
 func devpostHandler(w http.ResponseWriter, r *http.Request) {
     if(firstContact) {
         firstContact = false
-        renderWelcomePage(w, r)
+        renderWelcomePage(w, r, dpstatus{false, true})
     } else {
         if(len(r.URL.Path) >= len(controlprefix)+1 && r.URL.Path[:len(controlprefix)+1] == "/"+controlprefix) {
             cmd := r.URL.RawQuery
