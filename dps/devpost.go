@@ -37,10 +37,20 @@ func guessContent(w http.ResponseWriter, path string) {
             w.Header().Set("Content-Type", "text/css")
         case last3 == ".js":
             w.Header().Set("Content-Type", "text/javascript")
-        case last3 == "tml":
+        case last3 == "tml", last3 == "htm":
             w.Header().Set("Content-Type", "text/html")
         case last3 == "svg":
             w.Header().Set("Content-Type", "image/svg+xml")
+        case last3 == "png":
+            w.Header().Set("Content-Type", "image/png")
+        case last3 == "ico":
+            w.Header().Set("Content-Type", "image/x-icon")
+        case last3 == "son":
+            w.Header().Set("Content-Type", "application/json")
+        case last3 == "gif":
+            w.Header().Set("Content-Type", "image/gif")
+        case last3 == "jpg", last3 == "peg":
+            w.Header().Set("Content-Type", "image/jpeg")
     }
 }
 
