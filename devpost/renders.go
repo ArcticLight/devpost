@@ -152,3 +152,17 @@ func renderContent(w http.ResponseWriter, r *http.Request, path string, content 
   guessContent(w, path)
   w.Write(content)
 }
+
+//renderHTMLPage renders the content []byte as a served HTML document.
+//It does NOT validate whether the content is actually an HTML document, but it
+//WILL set the Content-Type header before writing the response, and MAY perform
+//devpost-specific post-processing before rendering it.
+//
+//At the moment, this function simply writes the content-type header and
+//prints the content as-is. It is separated into its own helper function however
+//so that in the future, devpost may include dynamic page rewriting features such as
+//Livereload support.
+func renderHTMLPage(w http.ResponseWriter, r *http.Request, content []byte) {
+    w.Header().Set("Content-Type", "text/html")
+    w.Write(content)
+}

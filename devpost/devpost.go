@@ -7,7 +7,6 @@ import (
     "net/http"
     "os"
     "strings"
-   // "log"
 )
 
 var workingdir string
@@ -23,22 +22,6 @@ func init() {
     }
     
     closereq = make(chan(bool), 1)
-}
-
-
-
-//renderHTMLPage renders the content []byte as a served HTML document.
-//It does NOT validate whether the content is actually an HTML document, but it
-//WILL set the Content-Type header before writing the response, and MAY perform
-//devpost-specific post-processing before rendering it.
-//
-//At the moment, this function simply writes the content-type header and
-//prints the content as-is. It is separated into its own helper function however
-//so that in the future, devpost may include dynamic page rewriting features such as
-//Livereload support.
-func renderHTMLPage(w http.ResponseWriter, r *http.Request, content []byte) {
-    w.Header().Set("Content-Type", "text/html")
-    w.Write(content)
 }
 
 //stopServer stops the running devpost server.
@@ -75,7 +58,7 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
                     }
             }
         } else {
-            path := "./" + r.URL.Path[1:]
+            path := workingdir + "/" + r.URL.Path[1:]
             if os.PathSeparator != '/' {
                 path = strings.Replace(path, "/", string(os.PathSeparator), -1)
             }
