@@ -7,6 +7,7 @@ import (
     "net/http"
     "os"
     "strings"
+   // "log"
 )
 
 var workingdir string
@@ -24,38 +25,27 @@ func init() {
     closereq = make(chan(bool), 1)
 }
 
-//guessContent attempts to guess the Content-Type header most
-//relevant for the given path. It does this by checking the file
-//extension, if it has one, and then setting the appropriate header
-//on the http.ResponseWriter provided.
-func guessContent(w http.ResponseWriter, path string) {
-//TODO: Rewrite this so it's better.
-    if(len(path) <= 4) {
-        return
-    }
-    
-    last3 := path[len(path)-3:]
-    
-    switch {
-        case last3 == "css":
-            w.Header().Set("Content-Type", "text/css")
-        case last3 == ".js":
-            w.Header().Set("Content-Type", "text/javascript")
-        case last3 == "tml", last3 == "htm":
-            w.Header().Set("Content-Type", "text/html")
-        case last3 == "svg":
-            w.Header().Set("Content-Type", "image/svg+xml")
-        case last3 == "png":
-            w.Header().Set("Content-Type", "image/png")
-        case last3 == "ico":
-            w.Header().Set("Content-Type", "image/x-icon")
-        case last3 == "son":
-            w.Header().Set("Content-Type", "application/json")
-        case last3 == "gif":
-            w.Header().Set("Content-Type", "image/gif")
-        case last3 == "jpg", last3 == "peg":
-            w.Header().Set("Content-Type", "image/jpeg")
-    }
+
+
+//renderHTMLPage renders the content []byte as a served HTML document.
+//It does NOT validate whether the content is actually an HTML document, but it
+//WILL set the Content-Type header before writing the response, and MAY perform
+//devpost-specific post-processing before rendering it.
+//
+//At the moment, this function simply writes the content-type header and
+//prints the content as-is. It is separated into its own helper function however
+//so that in the future, devpost may include dynamic page rewriting features such as
+//Livereload support.
+func renderHTMLPage(w http.ResponseWriter, r *http.Request, content []byte) {
+    w.Header().Set("Content-Type", "text/html")
+    w.Write(content)
+}
+
+//stopServer stops the running devpost server.
+//
+//In the future, it may perform cleanup or other operations involved in shutting
+//down DevPost.
+func stopServer() {
 }
 
 //devpostHandler is the HTTP handler assigned to handle requests for devpost.
@@ -72,11 +62,13 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
         renderWelcomePage(w, r)
     } else {
         if(len(r.URL.Path) >= len(controlprefix)+1 && r.URL.Path[:len(controlprefix)+1] == "/"+controlprefix) {
-            cmd := r.URL.Path[len(controlprefix)+1:];
+            cmd := r.URL.RawQuery
             switch {
-                case cmd == "/stop":
-                    renderStopPage(w, r)
-                    stopServer()
+                case cmd == "stop":
+                    if(r.Method == "GET") {
+                        renderStopPage(w, r)
+                        closereq<-true
+                    }
                 default:
                     if(r.Method == "GET") {
                         renderControlPage(w, r)
@@ -99,10 +91,10 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
                     w.WriteHeader(404)
                     renderFileNotFoundPage(w, r, path, err)
                 } else {
-                    renderHTMLPage(contents)
+                    renderHTMLPage(w, r, contents)
                 }
             } else {
-                renderContent(w, r, path)
+                renderContent(w, r, path, contents)
             }
         }
     }
@@ -115,4 +107,5 @@ func main() {
     fmt.Println("Launching your browser at DevPost!")
     open.Run("http://localhost:8080/")
     <- closereq
+    stopServer()
 }
