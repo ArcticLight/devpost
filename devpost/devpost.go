@@ -3,7 +3,6 @@ package main
 import (
     "fmt"
     "github.com/skratchdot/open-golang/open"
-    rez "github.com/arcticlight/devpost/dps/resources"
     "io/ioutil"
     "net/http"
     "os"
@@ -25,7 +24,12 @@ func init() {
     closereq = make(chan(bool), 1)
 }
 
+//guessContent attempts to guess the Content-Type header most
+//relevant for the given path. It does this by checking the file
+//extension, if it has one, and then setting the appropriate header
+//on the http.ResponseWriter provided.
 func guessContent(w http.ResponseWriter, path string) {
+//TODO: Rewrite this so it's better.
     if(len(path) <= 4) {
         return
     }
@@ -54,20 +58,28 @@ func guessContent(w http.ResponseWriter, path string) {
     }
 }
 
+//devpostHandler is the HTTP handler assigned to handle requests for devpost.
+//It handles presenting the welcome page on first run, and further delegates
+//rendering content or service pages depending on the status of the request.
+//
+//I could probably make better use of the go HTTP package, however I haven't
+//fully investigated the API yet, and I don't know if I can enable the correct
+//routing of pages with the dynamic "/devpost" handle if I don't take care of it
+//myself.
 func devpostHandler(w http.ResponseWriter, r *http.Request) {
     if(firstContact) {
         firstContact = false
-        fmt.Fprintf(w, rez.Welcomepage(workingdir))
+        renderWelcomePage(w, r)
     } else {
         if(len(r.URL.Path) >= len(controlprefix)+1 && r.URL.Path[:len(controlprefix)+1] == "/"+controlprefix) {
             cmd := r.URL.Path[len(controlprefix)+1:];
             switch {
                 case cmd == "/stop":
-                    fmt.Fprintf(w, rez.Stoppage())
-                    closereq<-true
+                    renderStopPage(w, r)
+                    stopServer()
                 default:
                     if(r.Method == "GET") {
-                        fmt.Fprintf(w, rez.Controlpage(workingdir, &controlprefix))
+                        renderControlPage(w, r)
                     }
             }
         } else {
@@ -77,8 +89,6 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
             }
             contents, err := ioutil.ReadFile(r.URL.Path[1:])
             if err != nil {
-                //fmt.Println(path[len(path)-2:])
-                //fmt.Println(path[:len(path)-1])
                 if len(path) >= 2 && path[len(path)-1:] == string(os.PathSeparator) {
                     path = path[:len(path)-1]
                 } else if len(path) < 2 {
@@ -87,14 +97,12 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
                 contents, err = ioutil.ReadFile(path + string(os.PathSeparator) + "index.html")
                 if err != nil {
                     w.WriteHeader(404)
-                    fmt.Fprintf(w, rez.FileNotFound(path, err))
+                    renderFileNotFoundPage(w, r, path, err)
                 } else {
-                    w.Header().Set("Content-Type", "text/html")
-                    w.Write(contents)
+                    renderHTMLPage(contents)
                 }
             } else {
-                guessContent(w, path)
-                w.Write(contents)
+                renderContent(w, r, path)
             }
         }
     }
