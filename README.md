@@ -9,7 +9,7 @@ One reason: Simplicity and portability. DevPost was designed with the goal of of
 In addition, it can be configured right from your browser, without keeping the terminal open. In the future, all of DevPost's options will be configurable from the browser, so there won't be anything to learn, and no need to bring up or keep yet another terminal or command prompt open.
 
 ### Features
-DevPost is still in beta right now, and most of its features are unimplemented. It currently:
+DevPost is still in early alpha right now, and most of its features are unimplemented. It currently:
 
 1. Serves HTML pages from its working directory
 2. Serves bad-looking service pages about DevPost's status, and on 404.
