@@ -29,4 +29,4 @@ Getting DevPost if you have Go setup on your PC is very simple: simply go-get th
 
 ```go get github.com/arcticlight/devpost/devpost```
 
-There may also be a binary release of DevPost available for your system. DevPost - when compiled - has no external dependencies, so you can just run the file you download and it should work.
+There may also be a binary release of DevPost available for your system. DevPost - when compiled - has no external dependencies (other than git which is optional), so you can just run the file you download and it should work.
