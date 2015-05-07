@@ -160,11 +160,11 @@ var fofTemplate, _ = template.New("fofTemplate").Parse(`<!DOCTYPE HTML>
 </html>`)
 
 //renderWelcomePage renders the HTML document first seen when DevPost starts up.
-func renderWelcomePage(w http.ResponseWriter, r *http.Request, status dpstatus) {
+func renderWelcomePage(w http.ResponseWriter, r *http.Request, status *dpstatus) {
     welcomeTemplate.ExecuteTemplate(w, "WelcomePage",
     struct {
       Style template.HTML
-      Status dpstatus
+      Status *dpstatus
       Wd, Prefix string
     } { servicestyle, status, workingdir, "/"+controlprefix })
 }

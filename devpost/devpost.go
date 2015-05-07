@@ -7,17 +7,22 @@ import (
     "net/http"
     "os"
     "strings"
+    "os/exec"
+    "log"
 )
 
 type dpstatus struct {
     Ok bool
     Giterror bool
+    Gitpath string
 }
 
 var workingdir string
 var closereq chan(bool)
 var firstContact = true
 var controlprefix = "devpost"
+var gitcommand = "git"
+var gitusercommand = ""
 
 func init() {
     var err error
@@ -27,6 +32,25 @@ func init() {
     }
     
     closereq = make(chan(bool), 1)
+}
+
+func execChecks() *dpstatus {
+    var ret = dpstatus{Ok: false, Giterror: true, Gitpath: ""}
+    var err error
+    if gitusercommand == "" {
+        ret.Gitpath, err = exec.LookPath(gitcommand)
+    } else {
+        ret.Gitpath, err = exec.LookPath(gitusercommand)
+    }
+    
+    if err != nil {
+        log.Println(err)
+    } else {
+        ret.Ok = true
+        ret.Giterror = false
+    }
+    
+    return &ret
 }
 
 //stopServer stops the running devpost server.
@@ -47,7 +71,7 @@ func stopServer() {
 func devpostHandler(w http.ResponseWriter, r *http.Request) {
     if(firstContact) {
         firstContact = false
-        renderWelcomePage(w, r, dpstatus{false, true})
+        renderWelcomePage(w, r, execChecks())
     } else {
         if(len(r.URL.Path) >= len(controlprefix)+1 && r.URL.Path[:len(controlprefix)+1] == "/"+controlprefix) {
             cmd := r.URL.RawQuery
