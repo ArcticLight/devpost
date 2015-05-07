@@ -26,6 +26,7 @@ Missing from DevPost are the following planned features:
 ### Installing DevPost
 
 Getting DevPost if you have Go setup on your PC is very simple: simply go-get this package, with this command:
+
 ```go get github.com/arcticlight/devpost/devpost```
 
 There may also be a binary release of DevPost available for your system. DevPost - when compiled - has no external dependencies, so you can just run the file you download and it should work.
