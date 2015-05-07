@@ -13,7 +13,7 @@ DevPost is still in early alpha right now, and most of its features are unimplem
 
 1. Serves HTML pages from its working directory
 2. Serves bad-looking service pages about DevPost's status, and on 404.
-3. Has a bad-looking service directory starting at /devpost. If you navigate to /devpost/stop, the server stops.
+3. Has a bad-looking service directory starting at /devpost. If you navigate to /devpost?stop, the server stops.
 
 Missing from DevPost are the following planned features:
 
