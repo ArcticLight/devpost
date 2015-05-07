@@ -22,3 +22,10 @@ Missing from DevPost are the following planned features:
 3. Ability to clone Git repositories automatically.
 4. Ability to periodically poll a remote git repository for pushes, and pull when necessary, keeping itself up to date.
 5. Better looking interface.
+
+### Installing DevPost
+
+Getting DevPost if you have Go setup on your PC is very simple: simply go-get this package, with this command:
+```go get github.com/arcticlight/devpost/devpost```
+
+There may also be a binary release of DevPost available for your system. DevPost - when compiled - has no external dependencies, so you can just run the file you download and it should work.
