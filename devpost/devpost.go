@@ -11,46 +11,36 @@ import (
     "log"
 )
 
-type dpstatus struct {
-    Ok bool
-    Giterror bool
-    Gitpath string
-}
-
-var workingdir string
-var closereq chan(bool)
-var firstContact = true
-var controlprefix = "devpost"
-var gitcommand = "git"
-var gitusercommand = ""
-
 func init() {
     var err error
-    workingdir, err = os.Getwd()
+    status.workingdir, err = os.Getwd()
     if err != nil {
         panic(err)
     }
-    
-    closereq = make(chan(bool), 1)
 }
 
 func execChecks() *dpstatus {
-    var ret = dpstatus{Ok: false, Giterror: true, Gitpath: ""}
+    status.ok = false
+    status.giterror = nil
+    status.gitpath = ""
+    
     var err error
-    if gitusercommand == "" {
-        ret.Gitpath, err = exec.LookPath(gitcommand)
+    
+    if status.usersets.gitusercommand == "" {
+        status.gitpath, err = exec.LookPath("git")
     } else {
-        ret.Gitpath, err = exec.LookPath(gitusercommand)
+        status.gitpath, err = exec.LookPath(status.usersets.gitusercommand)
     }
     
     if err != nil {
         log.Println(err)
+        status.giterror = err
     } else {
-        ret.Ok = true
-        ret.Giterror = false
+        status.ok = true
+        status.giterror = nil
     }
     
-    return &ret
+    return status
 }
 
 //stopServer stops the running devpost server.
@@ -69,17 +59,17 @@ func stopServer() {
 //routing of pages with the dynamic "/devpost" handle if I don't take care of it
 //myself.
 func devpostHandler(w http.ResponseWriter, r *http.Request) {
-    if(firstContact) {
-        firstContact = false
+    if(status.firstContact) {
+        status.firstContact = false
         renderWelcomePage(w, r, execChecks())
     } else {
-        if(len(r.URL.Path) >= len(controlprefix)+1 && r.URL.Path[:len(controlprefix)+1] == "/"+controlprefix) {
+        if(len(r.URL.Path) >= len(status.usersets.controlprefix)+1 && r.URL.Path[:len(status.usersets.controlprefix)+1] == "/"+status.usersets.controlprefix) {
             cmd := r.URL.RawQuery
             switch {
                 case cmd == "stop":
                     if(r.Method == "GET") {
                         renderStopPage(w, r)
-                        closereq<-true
+                        status.closereq<-true
                     }
                 default:
                     if(r.Method == "GET") {
@@ -87,7 +77,7 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
                     }
             }
         } else {
-            path := workingdir + "/" + r.URL.Path[1:]
+            path := status.workingdir + "/" + r.URL.Path[1:]
             if os.PathSeparator != '/' {
                 path = strings.Replace(path, "/", string(os.PathSeparator), -1)
             }
@@ -113,11 +103,11 @@ func devpostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    fmt.Printf("Starting up in %s...\n", workingdir)
+    fmt.Printf("Starting up in %s...\n", status.workingdir)
     http.HandleFunc("/", devpostHandler)
     go http.ListenAndServe(":8080", nil)
     fmt.Println("Launching your browser at DevPost!")
     open.Run("http://localhost:8080/")
-    <- closereq
+    <- status.closereq
     stopServer()
 }

@@ -50,6 +50,7 @@ var servicestyle = template.HTML(`<style>
     background-color: #FFAA99;
     border-radius: 5px;
     margin: 1em auto 0 auto;
+    padding: 0 4px 0 4px;
   }
   
   .error .code {
@@ -119,10 +120,11 @@ var welcomeTemplate, _ = template.New("WelcomePage").Parse(`
     <h1>DevPost started up!</h1>
     <div class="center">
       <p><em>(You will see this page only once)</em></p>
-      {{if .Status.Ok}}<span class="status ok">Everything is good!</span>{{else}}<span class="status bad">Something went wrong</span>
-        {{if .Status.Giterror}}<div class="error">
+      {{if .Statusok}}<span class="status ok">Everything is good!</span>{{else}}<span class="status bad">Something went wrong</span>
+        {{if .Giterr}}<div class="error">
           <h3>Git error:</h3>
-          <p>Unable to detect <span class="code">git</span></p>
+          <p>Something went wrong with <span class="code">git</span></p>
+          <p><span class="code">{{.Giterr}}</span></p>
           <p>You will be unable to use Git functionality until you manually fix this <a href="{{.Prefix}}">in the settings</a>.</p>
         </div>{{end}}
       {{end}}
@@ -164,9 +166,10 @@ func renderWelcomePage(w http.ResponseWriter, r *http.Request, status *dpstatus)
     welcomeTemplate.ExecuteTemplate(w, "WelcomePage",
     struct {
       Style template.HTML
-      Status *dpstatus
+      Statusok bool
+      Giterr error
       Wd, Prefix string
-    } { servicestyle, status, workingdir, "/"+controlprefix })
+    } { servicestyle, status.ok, status.giterror, status.workingdir, "/"+status.usersets.controlprefix })
 }
 
 func renderStopPage(w http.ResponseWriter, r *http.Request) {
