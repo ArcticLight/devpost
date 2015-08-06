@@ -1,6 +1,15 @@
-# DevPost
+# Deprecation Notice
 
-DevPost is a git-aware HTTP server suitable for developers. While it should probably not be used for production, it does have several features that should be useful to web developers.
+DevPost development has been cancelled, since I've been made aware of plenty of better tools that serve its purpose. Anyone who is interested in the concept of a fast, easy to use HTTP development server is encouraged to go check out [Browser-sync](http://www.browsersync.io/) an excellent tool for many of the uses that DevPost attempted to meet.
+
+## Why was DevPost cancelled?
+DevPost was an interesting side-project for me to work on to try and produce "the ideal HTTP development server"; one that came up instantly, required no configuration to work, and that could easily integrate with Git-Flow while working on a website.
+
+I started DevPost as an answer to this problem, but only because I was not aware that there *are* a few incredibly good tools out there that do this, such as the above-mentioned browser-sync. Since I'd rather not have a case of [competing standards](https://xkcd.com/927/) on our hands, I have chosen to discontinue development of DevPost in favor of recommending browser-sync.
+
+### DevPost (original documentation)
+
+DevPost was a git-aware HTTP server suitable for developers.
 
 ### Why should I use DevPost?
 
@@ -9,19 +18,11 @@ One reason: Simplicity and portability. DevPost was designed with the goal of of
 In addition, it can be configured right from your browser, without keeping the terminal open. In the future, all of DevPost's options will be configurable from the browser, so there won't be anything to learn, and no need to bring up or keep yet another terminal or command prompt open.
 
 ### Features
-DevPost is still in early alpha right now, and most of its features are unimplemented. It currently:
+DevPost was only available in early alpha form before development was discontinued, and most of its features remain unimplemented. It:
 
 1. Serves HTML pages from its working directory
 2. Serves bad-looking service pages about DevPost's status, and on 404.
 3. Has a bad-looking service directory starting at /devpost. If you navigate to /devpost?stop, the server stops.
-
-Missing from DevPost are the following planned features:
-
-1. Ability to integrate with Git and Git-flow via the /devpost service page.
-2. Ability to rename the /devpost service page in case you need, for whatever reason, the path /devpost to be available.
-3. Ability to clone Git repositories automatically.
-4. Ability to periodically poll a remote git repository for pushes, and pull when necessary, keeping itself up to date.
-5. Better looking interface.
 
 ### Installing DevPost
 
